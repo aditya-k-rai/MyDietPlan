@@ -1,0 +1,194 @@
+export interface Disease {
+  id: string;
+  name: string;
+  aliases: string[];
+  icd10: string;
+  description: string;
+  severity: 'mild' | 'moderate' | 'severe';
+  foodsToAvoid: { foodId: string; reason: string }[];
+  foodsToEat: { foodId: string; reason: string }[];
+  nutrientsToLimit: string[];
+  nutrientsToPrioritize: string[];
+  dietaryStrategy: string;
+  symptoms: string[];
+}
+
+export const DISEASES: Disease[] = [
+  {
+    id: 'diabetes-type-2',
+    name: 'Diabetes Type 2',
+    aliases: ['T2DM', 'Type 2 Diabetes', 'Non-insulin-dependent diabetes'],
+    icd10: 'E11',
+    description: 'A metabolic disorder characterized by high blood sugar, insulin resistance, and eventual insulin deficiency. Diet plays a crucial role in managing blood glucose levels.',
+    severity: 'moderate',
+    foodsToAvoid: [
+      { foodId: 'white-rice', reason: 'Very high glycemic index — spikes blood sugar rapidly' },
+      { foodId: 'banana', reason: 'Moderate GI with high sugar content — limit to half per serving' },
+    ],
+    foodsToEat: [
+      { foodId: 'brown-rice', reason: 'Lower GI than white rice — gentler blood sugar impact' },
+      { foodId: 'moong-dal', reason: 'Very low GI, high protein — excellent blood sugar control' },
+      { foodId: 'spinach', reason: 'Very low carb, high fiber — negligible blood sugar impact' },
+      { foodId: 'quinoa', reason: 'Complete protein with moderate GI — balanced energy release' },
+    ],
+    nutrientsToLimit: ['simple sugars', 'refined carbohydrates', 'saturated fat'],
+    nutrientsToPrioritize: ['fiber', 'protein', 'magnesium', 'chromium', 'Vitamin D'],
+    dietaryStrategy: 'Focus on low-GI foods, consistent meal timing, portion control. Aim for 45–60g carbs per meal. Prioritize fiber-rich vegetables, lean proteins, and healthy fats. Avoid sugary drinks and processed foods.',
+    symptoms: ['Increased thirst', 'Frequent urination', 'Fatigue', 'Blurred vision', 'Slow healing'],
+  },
+  {
+    id: 'hypertension',
+    name: 'Hypertension (High Blood Pressure)',
+    aliases: ['High BP', 'HTN', 'Arterial Hypertension'],
+    icd10: 'I10',
+    description: 'A condition where blood pressure is consistently elevated (≥130/80 mmHg). The DASH diet is the gold standard dietary approach.',
+    severity: 'moderate',
+    foodsToAvoid: [
+      { foodId: 'milk-whole', reason: 'High sodium when processed — choose low-sodium dairy' },
+    ],
+    foodsToEat: [
+      { foodId: 'spinach', reason: 'High potassium and magnesium — both lower blood pressure' },
+      { foodId: 'salmon', reason: 'Omega-3 fatty acids reduce blood pressure and inflammation' },
+      { foodId: 'banana', reason: 'High potassium counteracts sodium and relaxes blood vessels' },
+      { foodId: 'avocado', reason: 'Potassium-rich, heart-healthy monounsaturated fats' },
+    ],
+    nutrientsToLimit: ['sodium (< 2,300mg/day)', 'alcohol', 'saturated fat', 'trans fat'],
+    nutrientsToPrioritize: ['potassium', 'magnesium', 'calcium', 'fiber', 'Omega-3'],
+    dietaryStrategy: 'Follow the DASH diet: rich in fruits, vegetables, whole grains, low-fat dairy. Reduce sodium to <2,300mg/day. Limit alcohol. Increase potassium-rich foods. Avoid processed meats and canned foods.',
+    symptoms: ['Headaches', 'Shortness of breath', 'Nosebleeds', 'Flushing', 'Visual changes'],
+  },
+  {
+    id: 'pcos',
+    name: 'PCOS (Polycystic Ovary Syndrome)',
+    aliases: ['Polycystic Ovarian Syndrome', 'PCOD'],
+    icd10: 'E28.2',
+    description: 'A hormonal disorder in women characterized by irregular periods, excess androgen, and polycystic ovaries. Insulin resistance is a key driver — diet is critical.',
+    severity: 'moderate',
+    foodsToAvoid: [],
+    foodsToEat: [
+      { foodId: 'oats-rolled', reason: 'High fiber reduces insulin resistance and controls hormones' },
+      { foodId: 'salmon', reason: 'Omega-3 reduces androgen levels and inflammation' },
+      { foodId: 'spinach', reason: 'Magnesium improves insulin sensitivity' },
+      { foodId: 'chickpeas', reason: 'Low GI, high fiber — excellent for insulin regulation' },
+    ],
+    nutrientsToLimit: ['refined carbs', 'sugar', 'saturated fat', 'dairy (for some women)'],
+    nutrientsToPrioritize: ['fiber', 'Omega-3', 'magnesium', 'zinc', 'Vitamin D', 'inositol'],
+    dietaryStrategy: 'Low-GI, anti-inflammatory diet. Reduce refined carbs and sugar. Increase fiber. Consider dairy-free if acne worsens. Regular meal timing. Prioritize Omega-3 rich foods. Avoid processed foods.',
+    symptoms: ['Irregular periods', 'Excess hair growth', 'Acne', 'Weight gain', 'Fertility issues'],
+  },
+  {
+    id: 'ckd',
+    name: 'Chronic Kidney Disease (CKD)',
+    aliases: ['Kidney Disease', 'CKD', 'Chronic Renal Failure'],
+    icd10: 'N18',
+    description: 'A progressive loss of kidney function. Diet is essential to slow progression and prevent complications. Restrictions on potassium, phosphorus, protein, and sodium.',
+    severity: 'severe',
+    foodsToAvoid: [
+      { foodId: 'spinach', reason: 'Very high potassium and phosphorus — can cause dangerous hyperkalemia' },
+      { foodId: 'avocado', reason: 'Extremely high potassium — avoid in moderate to severe CKD' },
+      { foodId: 'banana', reason: 'High potassium — limit strictly' },
+    ],
+    foodsToEat: [
+      { foodId: 'eggs', reason: 'High-quality protein with low phosphorus absorption — egg whites preferred' },
+      { foodId: 'chicken-breast', reason: 'Lean protein with controlled phosphorus' },
+    ],
+    nutrientsToLimit: ['potassium', 'phosphorus', 'sodium', 'protein (stage-dependent)', 'fluid'],
+    nutrientsToPrioritize: ['high-quality protein', 'calcium (if phosphorus controlled)', 'Vitamin D'],
+    dietaryStrategy: 'Stage-dependent: Early CKD — limit sodium. Moderate/Advanced — restrict potassium and phosphorus. Avoid phosphate additives. Control protein intake. Work with a registered dietitian for individualized meal plans.',
+    symptoms: ['Fatigue', 'Fluid retention', 'Nausea', 'Decreased urine output', 'Bone pain'],
+  },
+  {
+    id: 'high-cholesterol',
+    name: 'High Cholesterol (Hyperlipidemia)',
+    aliases: ['High LDL', 'Hypercholesterolemia', 'Dyslipidemia'],
+    icd10: 'E78',
+    description: 'Elevated levels of LDL cholesterol or total cholesterol, increasing heart disease risk. Diet significantly impacts cholesterol levels.',
+    severity: 'moderate',
+    foodsToAvoid: [],
+    foodsToEat: [
+      { foodId: 'oats-rolled', reason: 'Beta-glucan fiber directly reduces LDL cholesterol' },
+      { foodId: 'salmon', reason: 'Omega-3 raises HDL and lowers triglycerides' },
+      { foodId: 'walnuts', reason: 'Plant sterols and Omega-3 reduce total and LDL cholesterol' },
+      { foodId: 'almonds', reason: 'Unsaturated fats and plant sterols lower LDL' },
+      { foodId: 'avocado', reason: 'Oleic acid lowers LDL without affecting HDL' },
+    ],
+    nutrientsToLimit: ['saturated fat (<7% of calories)', 'trans fat', 'dietary cholesterol', 'refined carbs'],
+    nutrientsToPrioritize: ['soluble fiber', 'Omega-3', 'plant sterols/stanols', 'monounsaturated fats'],
+    dietaryStrategy: 'Mediterranean-style diet: olive oil, nuts, fish, legumes, vegetables. Avoid red meat, full-fat dairy, fried foods. Increase soluble fiber (oats, legumes). Add 2g/day plant sterols.',
+    symptoms: ['Usually asymptomatic', 'Xanthelasmas (fat deposits)', 'Chest pain (if advanced CAD)'],
+  },
+  {
+    id: 'anemia',
+    name: 'Iron Deficiency Anemia',
+    aliases: ['Iron Anemia', 'Microcytic Anemia', 'Anemia'],
+    icd10: 'D50',
+    description: 'Insufficient red blood cells due to iron deficiency. Very common in India, especially in women and children. Diet is the first line of treatment.',
+    severity: 'mild',
+    foodsToAvoid: [],
+    foodsToEat: [
+      { foodId: 'spinach', reason: 'High non-heme iron — pair with Vitamin C for better absorption' },
+      { foodId: 'lentils-red', reason: 'Highest iron among lentils' },
+      { foodId: 'chicken-breast', reason: 'Heme iron — most bioavailable form' },
+      { foodId: 'eggs', reason: 'Contains heme iron and B12' },
+      { foodId: 'moong-dal', reason: 'Good plant iron source' },
+    ],
+    nutrientsToLimit: ['calcium (taken with iron-rich meals)', 'tannins (tea/coffee with meals)', 'phytates'],
+    nutrientsToPrioritize: ['iron', 'Vitamin C', 'Vitamin B12', 'folate', 'copper'],
+    dietaryStrategy: 'Increase heme iron (meat, fish, poultry) and non-heme iron (leafy greens, legumes). Always pair plant iron with Vitamin C foods. Avoid tea/coffee within 1 hour of iron-rich meals. Cook in cast iron. Get B12 and folate checked.',
+    symptoms: ['Fatigue', 'Weakness', 'Pale skin', 'Shortness of breath', 'Dizziness', 'Cold hands/feet'],
+  },
+  {
+    id: 'gout',
+    name: 'Gout',
+    aliases: ['Hyperuricemia', 'Uric Acid Arthritis'],
+    icd10: 'M10',
+    description: 'A painful form of arthritis caused by excess uric acid crystallizing in joints. Diet is critical — high-purine foods trigger flares.',
+    severity: 'moderate',
+    foodsToAvoid: [
+      { foodId: 'salmon', reason: 'High purines — can trigger gout flares' },
+      { foodId: 'chicken-breast', reason: 'Moderate purines — limit to 85–113g per meal' },
+    ],
+    foodsToEat: [
+      { foodId: 'spinach', reason: 'Low purine vegetable — safe for gout' },
+      { foodId: 'oats-rolled', reason: 'Low purine, anti-inflammatory' },
+      { foodId: 'sweet-potato', reason: 'Low purine, alkalizing' },
+      { foodId: 'greek-yogurt', reason: 'Dairy actually lowers uric acid levels' },
+    ],
+    nutrientsToLimit: ['purines (organ meats, shellfish, red meat)', 'alcohol (especially beer)', 'fructose', 'sugary drinks'],
+    nutrientsToPrioritize: ['Vitamin C', 'fiber', 'water (3L/day)', 'low-fat dairy'],
+    dietaryStrategy: 'Avoid high-purine foods. Drink 3L water daily. Avoid alcohol especially beer. Increase Vitamin C (lowers uric acid). Eat cherries or cherry extract. Dairy lowers uric acid. Maintain healthy weight.',
+    symptoms: ['Intense joint pain (especially big toe)', 'Swelling and redness', 'Limited range of motion', 'Tophi (uric acid deposits)'],
+  },
+  {
+    id: 'osteoporosis',
+    name: 'Osteoporosis',
+    aliases: ['Bone Loss', 'Low Bone Density', 'Porous Bones'],
+    icd10: 'M81',
+    description: 'A condition where bones become weak and brittle due to decreased bone density. Calcium, Vitamin D, and protein are essential nutrients.',
+    severity: 'moderate',
+    foodsToAvoid: [],
+    foodsToEat: [
+      { foodId: 'milk-whole', reason: 'Best natural calcium source (113mg per 100ml)' },
+      { foodId: 'paneer', reason: 'Very high calcium (480mg/100g) — excellent for bones' },
+      { foodId: 'almonds', reason: 'High calcium and magnesium for bone health' },
+      { foodId: 'salmon', reason: 'Vitamin D and Omega-3 improve calcium absorption' },
+      { foodId: 'spinach', reason: 'Calcium and Vitamin K for bone mineralization' },
+    ],
+    nutrientsToLimit: ['sodium (leaches calcium)', 'excessive protein', 'caffeine', 'alcohol'],
+    nutrientsToPrioritize: ['calcium (1,200mg/day)', 'Vitamin D (600-800 IU/day)', 'protein', 'magnesium', 'Vitamin K'],
+    dietaryStrategy: 'Ensure 1,200mg calcium daily through dairy, fortified foods, or supplements. Get adequate Vitamin D (sunlight + food). Regular weight-bearing exercise. Avoid smoking. Limit alcohol and sodium.',
+    symptoms: ['Back pain (fracture)', 'Loss of height', 'Stooped posture', 'Fractures from minor falls'],
+  },
+];
+
+export function getDiseaseById(id: string): Disease | undefined {
+  return DISEASES.find(d => d.id === id);
+}
+
+export function searchDiseases(query: string): Disease[] {
+  const q = query.toLowerCase();
+  return DISEASES.filter(d =>
+    d.name.toLowerCase().includes(q) ||
+    d.aliases.some(a => a.toLowerCase().includes(q))
+  );
+}
