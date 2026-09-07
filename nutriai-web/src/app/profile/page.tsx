@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   ChevronLeft, User, Heart, Shield, Activity, Save, AlertCircle, Check
@@ -27,6 +27,15 @@ export default function ProfilePage() {
 
   const [saved, setSaved] = useState(false);
 
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('nutriai_user_profile');
+      if (stored) {
+        setProfile(prev => ({ ...prev, ...JSON.parse(stored) }));
+      }
+    } catch {}
+  }, []);
+
   const toggleDisease = (id: string) => {
     setProfile(p => ({
       ...p,
@@ -35,6 +44,9 @@ export default function ProfilePage() {
   };
 
   const handleSave = () => {
+    try {
+      localStorage.setItem('nutriai_user_profile', JSON.stringify(profile));
+    } catch {}
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
   };

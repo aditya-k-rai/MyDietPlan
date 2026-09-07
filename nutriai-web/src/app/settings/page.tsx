@@ -13,6 +13,59 @@ export default function SettingsPage() {
     waterAlerts: true,
     weeklyReport: false,
   });
+  const [dataMessage, setDataMessage] = useState<string | null>(null);
+
+  const handleDownloadHealthData = () => {
+    try {
+      const savedProfile = localStorage.getItem('nutriai_user_profile');
+      const healthData = savedProfile ? JSON.parse(savedProfile) : {
+        name: 'Demo User',
+        email: 'demo@nutriai.com',
+        goal: 'Weight Loss',
+        diseases: ['Type 2 Diabetes'],
+        allergies: ['Peanuts'],
+        tdee: 1800,
+        targetCalories: 1300,
+        macros: { protein: '120g', carbs: '140g', fat: '45g' },
+      };
+
+      const exportPayload = {
+        app: 'NutriAI Health Platform',
+        version: '1.0.0',
+        exportedAt: new Date().toISOString(),
+        profile: healthData,
+        preferences: notifications,
+      };
+
+      const blob = new Blob([JSON.stringify(exportPayload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `nutriai-health-data-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+
+      setDataMessage('Health data downloaded successfully as JSON.');
+      setTimeout(() => setDataMessage(null), 4000);
+    } catch {
+      setDataMessage('Failed to export health data.');
+    }
+  };
+
+  const handleDeleteAccount = () => {
+    const confirmed = window.confirm(
+      'Are you sure you want to delete your account and reset all saved health data? This cannot be undone.'
+    );
+    if (confirmed) {
+      localStorage.removeItem('nutriai_user_profile');
+      localStorage.removeItem('nutriai_auth_user');
+      localStorage.removeItem('nutriai_progress');
+      setDataMessage('Account data cleared successfully. Redirecting to home...');
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 1500);
+    }
+  };
 
   return (
     <div style={{ minHeight: '100vh', background: '#0a0f1e', color: '#e2e8f0', paddingBottom: '80px' }}>
@@ -34,9 +87,19 @@ export default function SettingsPage() {
 
       {/* Main Content */}
       <main style={{ maxWidth: '900px', margin: '32px auto 0', padding: '0 24px' }}>
+        {dataMessage && (
+          <div style={{
+            padding: '12px 16px', borderRadius: '12px', marginBottom: '20px',
+            background: 'rgba(16,185,129,0.15)', border: '1px solid #10b981',
+            color: '#34d399', fontSize: '14px', fontWeight: 600,
+          }}>
+            {dataMessage}
+          </div>
+        )}
+
         {/* Subscription Plan Card */}
         <div className="card glass-emerald" style={{ padding: '28px', borderRadius: '20px', marginBottom: '28px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
             <div>
               <div style={{ fontSize: '12px', color: '#10b981', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                 Current Subscription
@@ -88,10 +151,16 @@ export default function SettingsPage() {
             <Lock size={20} color="#f59e0b" /> Data Privacy & Security
           </h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <button className="btn btn-outline btn-sm" style={{ width: 'fit-content' }}>
+            <button
+              onClick={handleDownloadHealthData}
+              className="btn btn-outline btn-sm"
+              style={{ width: 'fit-content' }}>
               Download My Health Data (JSON)
             </button>
-            <button className="btn btn-danger btn-sm" style={{ width: 'fit-content' }}>
+            <button
+              onClick={handleDeleteAccount}
+              className="btn btn-danger btn-sm"
+              style={{ width: 'fit-content' }}>
               Delete Account & All Data
             </button>
           </div>

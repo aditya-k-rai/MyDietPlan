@@ -1,0 +1,64 @@
+{
+  "name": "NutriAI — AI-Powered Nutrition & Diet Planning",
+  "short_name": "NutriAI",
+  "description": "World-class AI nutrition planning, clinical meal analysis, and real-time biometric diet intelligence.",
+  "start_url": "/dashboard",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0a0f1e",
+  "theme_color": "#10b981",
+  "lang": "en-IN",
+  "categories": ["health", "fitness", "lifestyle", "medical"],
+  "icons": [
+    {
+      "src": "/globe.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/globe.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Generate AI Plan",
+      "short_name": "New Plan",
+      "description": "Create a clinical personalized diet plan tailored to your health biomarkers",
+      "url": "/plan/generate",
+      "icons": [{ "src": "/file.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "Nutrition Dashboard",
+      "short_name": "Dashboard",
+      "description": "View today's calorie targets, macronutrients, and water intake",
+      "url": "/dashboard",
+      "icons": [{ "src": "/file.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "Food Database",
+      "short_name": "Food DB",
+      "description": "Explore 500+ Indian and global verified nutritional profiles",
+      "url": "/food",
+      "icons": [{ "src": "/file.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "Book Clinical Dietitian",
+      "short_name": "Consult",
+      "description": "Schedule a 1-on-1 consultation with a licensed clinical dietitian",
+      "url": "/consultation",
+      "icons": [{ "src": "/file.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "Health Calculators",
+      "short_name": "Calculators",
+      "description": "BMR, TDEE, macro split, and ideal weight calculators",
+      "url": "/calculators",
+      "icons": [{ "src": "/file.svg", "sizes": "96x96" }]
+    }
+  ]
+}

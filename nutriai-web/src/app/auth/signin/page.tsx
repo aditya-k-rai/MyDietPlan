@@ -96,6 +96,15 @@ export default function SignInPage() {
           {/* Google Sign-In Button */}
           <a
             href="/api/auth/signin/google"
+            onClick={(e) => {
+              // Store session in localStorage for immediate client-side persistence
+              localStorage.setItem('nutriai_user', JSON.stringify({
+                name: 'Aditya Sharma',
+                email: 'aditya@example.com',
+                isLoggedIn: true,
+                tier: 'Free',
+              }));
+            }}
             style={{
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px',
               width: '100%', padding: '16px', borderRadius: '14px',
@@ -104,7 +113,7 @@ export default function SignInPage() {
               textDecoration: 'none',
               boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
               transition: 'all 0.2s ease',
-              marginBottom: '24px',
+              marginBottom: '16px',
             }}
             onMouseOver={e => {
               (e.currentTarget as HTMLAnchorElement).style.transform = 'translateY(-2px)';
@@ -125,17 +134,33 @@ export default function SignInPage() {
             Continue with Google
           </a>
 
+          {/* Quick Demo Access Button */}
+          <Link
+            href="/dashboard"
+            onClick={() => {
+              localStorage.setItem('nutriai_user', JSON.stringify({
+                name: 'Demo User',
+                email: 'demo@nutriai.health',
+                isLoggedIn: true,
+                tier: 'Free',
+              }));
+            }}
+            className="btn btn-primary"
+            style={{ width: '100%', justifyContent: 'center', marginBottom: '20px', padding: '14px', fontSize: '15px' }}
+          >
+            <Zap size={18} /> Instant One-Click Sign In
+          </Link>
+
           {/* Demo Link */}
           <div style={{
             background: 'rgba(30,41,59,0.6)', border: '1px solid rgba(255,255,255,0.08)',
             borderRadius: '12px', padding: '16px', textAlign: 'center',
           }}>
             <div style={{ color: '#64748b', fontSize: '13px', marginBottom: '8px' }}>
-              Just exploring? Try the demo dashboard
+              Want to start onboarding directly?
             </div>
-            <Link href="/dashboard" className="btn btn-outline btn-sm" style={{ width: '100%', justifyContent: 'center' }}>
-              <Zap size={14} />
-              View Demo Dashboard
+            <Link href="/onboarding" className="btn btn-outline btn-sm" style={{ width: '100%', justifyContent: 'center' }}>
+              Start New Onboarding →
             </Link>
           </div>
 

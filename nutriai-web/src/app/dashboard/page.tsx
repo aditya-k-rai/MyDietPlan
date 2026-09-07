@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Leaf, Flame, Droplets, Activity, Brain, Calendar, BarChart2,
   ChevronRight, Bell, Settings, User, LogOut, Search, Plus,
@@ -208,10 +208,46 @@ function Sidebar({ active }: { active: string }) {
 // ─── Dashboard Layout ──────────────────────────────────────────────────────────
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState('overview');
+  const [meals, setMeals] = useState(TODAY_PLAN.meals);
+  const [waterConsumed, setWaterConsumed] = useState(TODAY_PLAN.water.consumed);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [userProfile, setUserProfile] = useState(MOCK_USER);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('nutriai_user_profile');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setUserProfile(prev => ({
+          ...prev,
+          name: parsed.name || prev.name,
+          goal: parsed.goal || prev.goal,
+          diseases: parsed.diseases || prev.diseases,
+        }));
+      }
+    } catch {}
+  }, []);
 
   const now = new Date();
   const hour = now.getHours();
   const greeting = hour < 12 ? 'Good Morning' : hour < 17 ? 'Good Afternoon' : 'Good Evening';
+
+  // Dynamic calculations based on interactive meals state
+  const consumedCalories = meals.filter(m => m.done).reduce((acc, m) => acc + m.calories, 0);
+  const totalCalories = TODAY_PLAN.totalCalories;
+  const ratio = consumedCalories / totalCalories;
+
+  const currentProtein = Math.round(TODAY_PLAN.protein.target * ratio);
+  const currentCarbs = Math.round(TODAY_PLAN.carbs.target * ratio);
+  const currentFat = Math.round(TODAY_PLAN.fat.target * ratio);
+
+  const toggleMeal = (index: number) => {
+    setMeals(prev => prev.map((m, i) => i === index ? { ...m, done: !m.done } : m));
+  };
+
+  const addWater = () => {
+    setWaterConsumed(prev => Math.min(prev + 250, 4000));
+  };
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#0a0f1e' }}>
@@ -224,36 +260,82 @@ export default function DashboardPage() {
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '20px 32px', borderBottom: '1px solid rgba(255,255,255,0.06)',
           background: 'rgba(15,23,42,0.5)', backdropFilter: 'blur(20px)',
-          position: 'sticky', top: 0, zIndex: 10,
+          position: 'sticky', top: 0, zIndex: 20,
         }}>
           <div>
             <div style={{ fontSize: '22px', fontFamily: 'var(--font-display)', fontWeight: 700, color: 'white' }}>
-              {greeting}, {MOCK_USER.name.split(' ')[0]}! 👋
+              {greeting}, {userProfile.name.split(' ')[0]}! 👋
             </div>
             <div style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>
               {now.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
             </div>
           </div>
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', position: 'relative' }}>
             <Link href="/plan/generate" className="btn btn-primary btn-sm">
               <Plus size={14} /> New Plan
             </Link>
-            <button style={{
-              width: '38px', height: '38px', borderRadius: '10px',
-              background: 'rgba(30,41,59,0.6)', border: '1px solid rgba(255,255,255,0.08)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', color: '#64748b',
-            }}>
+            
+            {/* Notification Bell with Toggle */}
+            <button
+              onClick={() => setShowNotifications(!showNotifications)}
+              style={{
+                width: '38px', height: '38px', borderRadius: '10px',
+                background: showNotifications ? 'rgba(16,185,129,0.2)' : 'rgba(30,41,59,0.6)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', color: showNotifications ? '#10b981' : '#64748b',
+                position: 'relative',
+              }}>
               <Bell size={16} />
+              <span style={{
+                position: 'absolute', top: '7px', right: '7px',
+                width: '7px', height: '7px', borderRadius: '50%',
+                background: '#10b981',
+              }} />
             </button>
-            <div style={{
-              width: '38px', height: '38px', borderRadius: '10px',
-              background: 'linear-gradient(135deg, #065f46, #10b981)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', fontWeight: 700, color: 'white', fontSize: '14px',
-            }}>
-              D
-            </div>
+
+            {/* Notification Dropdown */}
+            {showNotifications && (
+              <div style={{
+                position: 'absolute', top: '48px', right: '48px', width: '320px',
+                background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '16px', padding: '16px', boxShadow: '0 16px 40px rgba(0,0,0,0.6)',
+                zIndex: 30,
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: 'white' }}>Notifications</span>
+                  <span style={{ fontSize: '11px', color: '#10b981' }}>3 new</span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {[
+                    { icon: '💧', text: 'Drink 250ml water now to stay on schedule', time: '10m ago' },
+                    { icon: '🔔', text: 'Dinner planned for 8:00 PM: Moong Dal + Roti', time: '1h ago' },
+                    { icon: '🌿', text: 'Beta-glucan in morning oats is helping regulate glucose', time: '3h ago' },
+                  ].map((notif, i) => (
+                    <div key={i} style={{ display: 'flex', gap: '10px', padding: '8px', borderRadius: '8px', background: 'rgba(255,255,255,0.03)' }}>
+                      <span style={{ fontSize: '16px' }}>{notif.icon}</span>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: '12px', color: '#e2e8f0', lineHeight: 1.4 }}>{notif.text}</div>
+                        <div style={{ fontSize: '10px', color: '#64748b', marginTop: '2px' }}>{notif.time}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* User Avatar linking to /profile */}
+            <Link href="/profile" style={{ textDecoration: 'none' }}>
+              <div style={{
+                width: '38px', height: '38px', borderRadius: '10px',
+                background: 'linear-gradient(135deg, #065f46, #10b981)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', fontWeight: 700, color: 'white', fontSize: '14px',
+                boxShadow: '0 2px 8px rgba(16,185,129,0.3)',
+              }}>
+                {userProfile.name.charAt(0).toUpperCase()}
+              </div>
+            </Link>
           </div>
         </div>
 
@@ -268,7 +350,7 @@ export default function DashboardPage() {
             <AlertTriangle size={18} color="#f59e0b" style={{ flexShrink: 0, marginTop: '1px' }} />
             <div style={{ fontSize: '13px', color: '#94a3b8', lineHeight: 1.6 }}>
               <strong style={{ color: '#fbbf24' }}>Condition active:</strong> Your plan is optimized for{' '}
-              <strong style={{ color: '#fbbf24' }}>Diabetes Type 2</strong> — low GI foods, controlled carbs, high fiber.
+              <strong style={{ color: '#fbbf24' }}>Type 2 Diabetes</strong> — low GI foods, controlled carbs, high fiber.
               Foods are color-coded for your safety.
             </div>
           </div>
@@ -276,12 +358,12 @@ export default function DashboardPage() {
           {/* Top Stats Row */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '16px', marginBottom: '28px' }}>
             {[
-              { label: 'Calories Left', value: `${TODAY_PLAN.totalCalories - TODAY_PLAN.consumed}`, unit: 'kcal', color: '#10b981', icon: <Flame size={18} /> },
-              { label: 'Protein', value: `${TODAY_PLAN.protein.consumed}/${TODAY_PLAN.protein.target}`, unit: 'g', color: '#6366f1', icon: <Activity size={18} /> },
-              { label: 'Carbs', value: `${TODAY_PLAN.carbs.consumed}/${TODAY_PLAN.carbs.target}`, unit: 'g', color: '#f59e0b', icon: <Zap size={18} /> },
-              { label: 'Water', value: `${TODAY_PLAN.water.consumed}`, unit: 'ml', color: '#38bdf8', icon: <Droplets size={18} /> },
+              { label: 'Calories Left', value: `${Math.max(0, totalCalories - consumedCalories)}`, unit: 'kcal', color: '#10b981', icon: <Flame size={18} /> },
+              { label: 'Protein', value: `${currentProtein}/${TODAY_PLAN.protein.target}`, unit: 'g', color: '#6366f1', icon: <Activity size={18} /> },
+              { label: 'Carbs', value: `${currentCarbs}/${TODAY_PLAN.carbs.target}`, unit: 'g', color: '#f59e0b', icon: <Zap size={18} /> },
+              { label: 'Water Logged', value: `${waterConsumed}`, unit: 'ml', color: '#38bdf8', icon: <Droplets size={18} />, action: addWater },
             ].map(stat => (
-              <div key={stat.label} className="card" style={{ padding: '20px' }}>
+              <div key={stat.label} className="card" style={{ padding: '20px', position: 'relative' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
                   <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 500 }}>{stat.label}</span>
                   <span style={{ color: stat.color }}>{stat.icon}</span>
@@ -290,6 +372,17 @@ export default function DashboardPage() {
                   {stat.value}
                   <span style={{ fontSize: '13px', color: '#475569', marginLeft: '4px', fontWeight: 400 }}>{stat.unit}</span>
                 </div>
+                {stat.action && (
+                  <button
+                    onClick={stat.action}
+                    style={{
+                      marginTop: '8px', padding: '2px 8px', borderRadius: '6px',
+                      background: 'rgba(56,189,248,0.12)', border: '1px solid rgba(56,189,248,0.25)',
+                      color: '#38bdf8', fontSize: '11px', cursor: 'pointer', fontWeight: 600,
+                    }}>
+                    +250ml
+                  </button>
+                )}
               </div>
             ))}
           </div>
@@ -301,12 +394,12 @@ export default function DashboardPage() {
               <div style={{ fontSize: '13px', fontWeight: 600, color: '#94a3b8', marginBottom: '20px', textAlign: 'center' }}>
                 Today's Calories
               </div>
-              <CalorieRing consumed={TODAY_PLAN.consumed} target={TODAY_PLAN.totalCalories} />
+              <CalorieRing consumed={consumedCalories} target={totalCalories} />
               <div style={{ marginTop: '20px', width: '100%' }}>
                 {[
-                  { label: 'Protein', val: TODAY_PLAN.protein.consumed, max: TODAY_PLAN.protein.target, color: '#6366f1' },
-                  { label: 'Carbs', val: TODAY_PLAN.carbs.consumed, max: TODAY_PLAN.carbs.target, color: '#f59e0b' },
-                  { label: 'Fat', val: TODAY_PLAN.fat.consumed, max: TODAY_PLAN.fat.target, color: '#ec4899' },
+                  { label: 'Protein', val: currentProtein, max: TODAY_PLAN.protein.target, color: '#6366f1' },
+                  { label: 'Carbs', val: currentCarbs, max: TODAY_PLAN.carbs.target, color: '#f59e0b' },
+                  { label: 'Fat', val: currentFat, max: TODAY_PLAN.fat.target, color: '#ec4899' },
                 ].map(m => (
                   <div key={m.label} style={{ marginBottom: '12px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
@@ -327,21 +420,27 @@ export default function DashboardPage() {
             {/* Today's Meals */}
             <div className="card" style={{ padding: '28px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '16px', fontWeight: 700, color: 'white' }}>
-                  Today's Meal Plan
-                </h3>
+                <div>
+                  <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '16px', fontWeight: 700, color: 'white' }}>
+                    Today's Meal Plan
+                  </h3>
+                  <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
+                    Click checkmark or meal to mark eaten and update calories
+                  </div>
+                </div>
                 <Link href="/plan/generate" className="btn btn-outline btn-sm">
                   <Brain size={14} /> Generate New
                 </Link>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {TODAY_PLAN.meals.map(meal => (
+                {meals.map((meal, idx) => (
                   <div key={meal.type}
+                    onClick={() => toggleMeal(idx)}
                     style={{
-                      padding: '16px', borderRadius: '12px',
-                      background: meal.done ? 'rgba(16,185,129,0.06)' : 'rgba(30,41,59,0.4)',
-                      border: meal.done ? '1px solid rgba(16,185,129,0.15)' : '1px solid rgba(255,255,255,0.06)',
-                      opacity: meal.done ? 0.85 : 1,
+                      padding: '16px', borderRadius: '12px', cursor: 'pointer',
+                      background: meal.done ? 'rgba(16,185,129,0.08)' : 'rgba(30,41,59,0.4)',
+                      border: meal.done ? '1px solid rgba(16,185,129,0.3)' : '1px solid rgba(255,255,255,0.06)',
+                      transition: 'all 0.2s',
                     }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                       <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
@@ -349,19 +448,27 @@ export default function DashboardPage() {
                           width: '24px', height: '24px', borderRadius: '50%',
                           background: meal.done ? '#10b981' : 'rgba(255,255,255,0.1)',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: '12px',
+                          fontSize: '12px', color: 'white', fontWeight: 700,
+                          transition: 'all 0.2s',
                         }}>
                           {meal.done ? '✓' : ''}
                         </div>
-                        <span style={{ fontWeight: 600, fontSize: '14px', color: 'white' }}>{meal.type}</span>
+                        <span style={{ fontWeight: 600, fontSize: '14px', color: meal.done ? '#34d399' : 'white' }}>
+                          {meal.type}
+                        </span>
                         <span style={{ fontSize: '12px', color: '#475569' }}>{meal.time}</span>
+                        {meal.done && (
+                          <span style={{ fontSize: '11px', color: '#10b981', fontWeight: 600 }}>Eaten</span>
+                        )}
                       </div>
-                      <span className="badge badge-emerald">{meal.calories} kcal</span>
+                      <span className={`badge ${meal.done ? 'badge-emerald' : 'badge-amber'}`}>
+                        {meal.calories} kcal
+                      </span>
                     </div>
                     <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', paddingLeft: '34px' }}>
                       {meal.foods.map(f => (
                         <span key={f.name} style={{
-                          fontSize: '12px', color: '#64748b', padding: '2px 10px',
+                          fontSize: '12px', color: meal.done ? '#94a3b8' : '#64748b', padding: '2px 10px',
                           borderRadius: '100px', background: 'rgba(255,255,255,0.05)',
                         }}>
                           {f.name} · {f.qty}
@@ -377,15 +484,15 @@ export default function DashboardPage() {
           {/* Quick Links Row */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '12px' }}>
             {[
-              { title: 'Generate AI Plan', desc: '2 plans left today', icon: '🤖', href: '/plan/generate', color: '#10b981' },
+              { title: 'Generate AI Plan', desc: 'Personalized AI plan', icon: '🤖', href: '/plan/generate', color: '#10b981' },
               { title: 'Food Database', desc: '1,000 foods + nutrients', icon: '🥦', href: '/food', color: '#6366f1' },
               { title: 'Calculators', desc: '18 nutrition tools', icon: '📊', href: '/calculators', color: '#f59e0b' },
               { title: 'Meal Calendar', desc: 'Weekly & monthly view', icon: '📅', href: '/calendar', color: '#ec4899' },
               { title: 'Progress', desc: 'Track your journey', icon: '📈', href: '/progress', color: '#84cc16' },
-              { title: 'Upgrade Premium', desc: 'Unlimited AI + dietitian', icon: '⭐', href: '#pricing', color: '#a855f7' },
+              { title: 'Upgrade Premium', desc: 'Unlimited AI + dietitian', icon: '⭐', href: '/#pricing', color: '#a855f7' },
             ].map(item => (
               <Link key={item.title} href={item.href} style={{ textDecoration: 'none' }}>
-                <div className="card" style={{ padding: '18px', cursor: 'pointer' }}>
+                <div className="card" style={{ padding: '18px', cursor: 'pointer', transition: 'all 0.2s', height: '100%' }}>
                   <div style={{ fontSize: '24px', marginBottom: '8px' }}>{item.icon}</div>
                   <div style={{ fontSize: '13px', fontWeight: 600, color: 'white', marginBottom: '2px' }}>{item.title}</div>
                   <div style={{ fontSize: '11px', color: '#475569' }}>{item.desc}</div>

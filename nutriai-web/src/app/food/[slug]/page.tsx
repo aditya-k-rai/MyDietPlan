@@ -16,7 +16,14 @@ interface Props {
 export const dynamicParams = true;
 
 export async function generateStaticParams() {
-  return FOODS.slice(0, 100).map(f => ({ slug: f.id }));
+  const baseSlugs = [
+    'white-rice', 'brown-rice', 'moong-dal', 'spinach', 'quinoa', 'milk-whole',
+    'salmon', 'avocado', 'oats-rolled', 'chickpeas', 'eggs', 'chicken-breast',
+    'walnuts', 'almonds', 'masoor-dal', 'sweet-potato', 'greek-yogurt', 'paneer', 'banana'
+  ];
+  const itemSlugs = FOODS.slice(0, 100).map(f => f.id);
+  const allSlugs = Array.from(new Set([...baseSlugs, ...itemSlugs]));
+  return allSlugs.map(slug => ({ slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

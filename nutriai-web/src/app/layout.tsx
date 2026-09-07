@@ -28,6 +28,12 @@ export const metadata: Metadata = {
   authors: [{ name: 'NutriAI' }],
   creator: 'NutriAI',
   metadataBase: new URL('https://nutriai.health'),
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'NutriAI',
+  },
   openGraph: {
     type: 'website',
     locale: 'en_IN',
@@ -57,7 +63,10 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${sora.variable}`}>
       <head>
         <link rel="icon" href="/favicon.ico" />
-        <meta name="theme-color" content="#065f46" />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#10b981" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
       <body className={inter.className}>
         {children}

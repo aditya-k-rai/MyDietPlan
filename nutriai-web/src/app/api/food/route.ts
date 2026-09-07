@@ -1,10 +1,13 @@
 import { NextResponse } from 'next/server';
-import { FOODS, searchFoods, getFoodById } from '@/lib/data/foods';
+import { FOODS, searchFoods, getFoodById, getFoodsByCategory } from '@/lib/data/foods';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const query = searchParams.get('q');
   const id = searchParams.get('id');
+  const category = searchParams.get('category');
+  const limit = Math.min(200, Math.max(1, parseInt(searchParams.get('limit') || '50', 10)));
+  const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
 
   if (id) {
     const food = getFoodById(id);
@@ -12,10 +15,24 @@ export async function GET(request: Request) {
     return NextResponse.json({ food });
   }
 
+  let results = FOODS;
+  if (category && category !== 'All') {
+    results = getFoodsByCategory(category, 5000);
+  }
   if (query) {
-    const results = searchFoods(query);
-    return NextResponse.json({ count: results.length, foods: results });
+    results = searchFoods(query, 5000).filter(f => !category || category === 'All' || f.category === category);
   }
 
-  return NextResponse.json({ count: FOODS.length, foods: FOODS });
+  const total = results.length;
+  const start = (page - 1) * limit;
+  const paginated = results.slice(start, start + limit);
+
+  return NextResponse.json({
+    total,
+    page,
+    limit,
+    count: paginated.length,
+    foods: paginated,
+  });
 }
+

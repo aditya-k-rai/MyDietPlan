@@ -81,7 +81,7 @@ const MOCK_PLAN = {
 };
 
 // ─── Intake Form ──────────────────────────────────────────────────────────────
-function PlanIntakeForm({ onGenerate }: { onGenerate: () => void }) {
+function PlanIntakeForm({ onGenerate }: { onGenerate: (formData: any) => void }) {
   const [form, setForm] = useState({
     age: '32', gender: 'female', weight: '70', weightUnit: 'kg',
     height: '162', heightUnit: 'cm', diseases: ['Diabetes Type 2'],
@@ -300,7 +300,7 @@ function PlanIntakeForm({ onGenerate }: { onGenerate: () => void }) {
       </section>
 
       {/* Generate Button */}
-      <button className="btn btn-primary btn-lg" onClick={onGenerate}
+      <button className="btn btn-primary btn-lg" onClick={() => onGenerate(form)}
         style={{ width: '100%', justifyContent: 'center', fontSize: '18px', padding: '18px' }}>
         <Brain size={22} />
         Generate My AI Diet Plan
@@ -310,9 +310,13 @@ function PlanIntakeForm({ onGenerate }: { onGenerate: () => void }) {
 }
 
 // ─── Plan Display ─────────────────────────────────────────────────────────────
-function PlanDisplay({ plan }: { plan: typeof MOCK_PLAN }) {
+function PlanDisplay({ plan, onReset }: { plan: typeof MOCK_PLAN | any; onReset: () => void }) {
   const mealIcons: Record<string, string> = {
     breakfast: '🌅', lunch: '☀️', snack: '🍎', dinner: '🌙'
+  };
+
+  const handleExportPDF = () => {
+    window.print();
   };
 
   return (
@@ -329,8 +333,8 @@ function PlanDisplay({ plan }: { plan: typeof MOCK_PLAN }) {
             </p>
           </div>
           <div style={{ display: 'flex', gap: '10px', flexShrink: 0 }}>
-            <button className="btn btn-ghost btn-sm"><RotateCcw size={14} /> Reset</button>
-            <button className="btn btn-outline btn-sm"><Download size={14} /> Export PDF</button>
+            <button className="btn btn-ghost btn-sm" onClick={onReset}><RotateCcw size={14} /> Reset Form</button>
+            <button className="btn btn-outline btn-sm" onClick={handleExportPDF}><Download size={14} /> Export Plan (PDF)</button>
           </div>
         </div>
 
@@ -360,7 +364,7 @@ function PlanDisplay({ plan }: { plan: typeof MOCK_PLAN }) {
           <div style={{ fontSize: '13px', fontWeight: 600, color: '#fbbf24', marginBottom: '8px' }}>
             ⚠️ Plan Adjustments
           </div>
-          {plan.warnings.map((w, i) => (
+          {plan.warnings.map((w: string, i: number) => (
             <div key={i} style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '4px' }}>• {w}</div>
           ))}
         </div>
@@ -368,11 +372,11 @@ function PlanDisplay({ plan }: { plan: typeof MOCK_PLAN }) {
 
       {/* Meals */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        {plan.meals.map(meal => (
+        {plan.meals.map((meal: any) => (
           <div key={meal.meal_type} className="card" style={{ padding: '24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                <span style={{ fontSize: '24px' }}>{mealIcons[meal.meal_type]}</span>
+                <span style={{ fontSize: '24px' }}>{mealIcons[meal.meal_type] || '🍽️'}</span>
                 <div>
                   <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '16px', color: 'white', textTransform: 'capitalize' }}>
                     {meal.meal_type}
@@ -383,7 +387,7 @@ function PlanDisplay({ plan }: { plan: typeof MOCK_PLAN }) {
               <span className="badge badge-emerald">{meal.meal_calories} kcal</span>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {meal.foods.map(food => (
+              {meal.foods.map((food: any) => (
                 <div key={food.food_name}
                   style={{
                     padding: '12px 16px', borderRadius: '10px',
@@ -426,7 +430,7 @@ function PlanDisplay({ plan }: { plan: typeof MOCK_PLAN }) {
           🛒 Shopping List
         </h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '8px' }}>
-          {plan.shopping_list.map(item => (
+          {plan.shopping_list.map((item: string) => (
             <div key={item} style={{
               display: 'flex', gap: '8px', alignItems: 'center',
               padding: '8px 12px', borderRadius: '8px', background: 'rgba(255,255,255,0.03)',
@@ -455,17 +459,44 @@ export default function GeneratePlanPage() {
     'Building your personalized plan...',
   ];
 
-  const handleGenerate = () => {
+  const [activePlan, setActivePlan] = useState<any>(MOCK_PLAN);
+
+  const handleGenerate = async (formData: any) => {
     setState('generating');
+    setGenerationStep(0);
+
+    let apiPlan: any = null;
+    const apiPromise = fetch('/api/plan/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData),
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.plan) {
+          apiPlan = data.plan;
+          try {
+            localStorage.setItem('nutriai_active_plan', JSON.stringify(data.plan));
+          } catch (e) {}
+        }
+      })
+      .catch(err => {
+        console.error('API plan generation error:', err);
+      });
+
     let step = 0;
-    const interval = setInterval(() => {
+    const interval = setInterval(async () => {
       step++;
       setGenerationStep(step);
       if (step >= STEPS.length) {
         clearInterval(interval);
-        setTimeout(() => setState('plan'), 500);
+        await apiPromise;
+        if (apiPlan) {
+          setActivePlan(apiPlan);
+        }
+        setState('plan');
       }
-    }, 700);
+    }, 600);
   };
 
   return (
@@ -481,7 +512,7 @@ export default function GeneratePlanPage() {
               AI Diet Plan Generator
             </h1>
             <p style={{ color: '#64748b', fontSize: '14px' }}>
-              Powered by Qwen via OpenRouter · 2 plans remaining today
+              Clinically calibrated with dynamic rules engine & Qwen intelligence · 2 plans remaining today
             </p>
           </div>
         </div>
@@ -536,13 +567,13 @@ export default function GeneratePlanPage() {
           <div>
             <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
               <button className="btn btn-ghost btn-sm" onClick={() => setState('form')}>
-                <ChevronLeft size={14} /> Regenerate
+                <ChevronLeft size={14} /> Regenerate Plan
               </button>
               <div style={{ padding: '6px 12px', borderRadius: '8px', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)' }}>
                 <span style={{ fontSize: '12px', color: '#10b981' }}>✓ Plan generated successfully</span>
               </div>
             </div>
-            <PlanDisplay plan={MOCK_PLAN} />
+            <PlanDisplay plan={activePlan} onReset={() => setState('form')} />
           </div>
         )}
       </div>

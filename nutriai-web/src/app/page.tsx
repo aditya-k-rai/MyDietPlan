@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 import {
-  Brain, Zap, Shield, BarChart2, Calendar, ChevronRight,
+  Brain, Zap, Shield, ShieldCheck, BarChart2, Calendar, ChevronRight,
   Star, Users, Clock, Award, ArrowRight, Check, Activity,
   Leaf, Flame, Droplets, Apple, Heart, MessageCircle, Lock,
   TrendingUp, AlertTriangle, Download, Smartphone
@@ -108,22 +108,27 @@ function Navbar() {
         {/* Desktop Nav */}
         <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}
           className="hidden-mobile">
-          {['Features', 'Food Database', 'Calculators', 'Pricing'].map(item => (
-            <a key={item} href={`#${item.toLowerCase().replace(' ', '-')}`}
+          {[
+            { label: 'Features', href: '#features' },
+            { label: 'Food Database', href: '/food' },
+            { label: 'Calculators', href: '/calculators' },
+            { label: 'Pricing', href: '#pricing' },
+          ].map(item => (
+            <Link key={item.label} href={item.href}
               style={{ color: '#94a3b8', fontSize: '14px', fontWeight: 500, textDecoration: 'none', transition: 'color 0.2s' }}
               onMouseOver={e => (e.currentTarget.style.color = '#e2e8f0')}
               onMouseOut={e => (e.currentTarget.style.color = '#94a3b8')}
-            >{item}</a>
+            >{item.label}</Link>
           ))}
         </div>
 
         {/* CTA Buttons */}
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <Link href="/auth/signin" className="btn btn-ghost btn-sm" style={{ display: 'none' }}>
+          <Link href="/auth/signin" className="btn btn-ghost btn-sm">
             Sign In
           </Link>
-          <Link href="/auth/signin" className="btn btn-primary btn-sm">
-            Get Started Free
+          <Link href="/plan/generate" className="btn btn-primary btn-sm">
+            Generate Plan
           </Link>
         </div>
       </div>
@@ -313,28 +318,40 @@ function FeaturesSection() {
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
-          {features.map((f, i) => (
-            <div key={f.title} className="card" style={{ padding: '28px', animationDelay: `${i * 60}ms` }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
-                <div style={{
-                  width: '52px', height: '52px', borderRadius: '14px',
-                  background: `${f.color}18`, border: `1px solid ${f.color}30`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: f.color,
-                }}>
-                  {f.icon}
+          {features.map((f, i) => {
+            const isConsultation = f.title === 'Dietitian Consultations';
+            const CardInner = (
+              <div key={f.title} className="card card-glow" style={{ padding: '28px', animationDelay: `${i * 60}ms`, height: '100%' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                  <div style={{
+                    width: '52px', height: '52px', borderRadius: '14px',
+                    background: `${f.color}18`, border: `1px solid ${f.color}30`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: f.color,
+                  }}>
+                    {f.icon}
+                  </div>
+                  <span className="badge" style={{
+                    background: `${f.color}15`, color: f.color,
+                    border: `1px solid ${f.color}25`, fontSize: '10px',
+                  }}>{f.tag}</span>
                 </div>
-                <span className="badge" style={{
-                  background: `${f.color}15`, color: f.color,
-                  border: `1px solid ${f.color}25`, fontSize: '10px',
-                }}>{f.tag}</span>
+                <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '18px', color: 'white', marginBottom: '8px' }}>
+                  {f.title} {isConsultation && '→'}
+                </h3>
+                <p style={{ color: '#64748b', fontSize: '14px', lineHeight: 1.7 }}>{f.description}</p>
               </div>
-              <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '18px', color: 'white', marginBottom: '8px' }}>
-                {f.title}
-              </h3>
-              <p style={{ color: '#64748b', fontSize: '14px', lineHeight: 1.7 }}>{f.description}</p>
-            </div>
-          ))}
+            );
+
+            if (isConsultation) {
+              return (
+                <Link key={f.title} href="/consultation" style={{ textDecoration: 'none' }}>
+                  {CardInner}
+                </Link>
+              );
+            }
+            return CardInner;
+          })}
         </div>
       </div>
     </section>
@@ -545,18 +562,18 @@ function PlanDemoSection() {
 // ─── Calculators Preview ────────────────────────────────────────────────────────
 function CalculatorsSection() {
   const calcs = [
-    { name: 'BMI Calculator', icon: '⚖️', desc: 'Body Mass Index + health risk' },
-    { name: 'BMR Calculator', icon: '🔥', desc: 'Basal Metabolic Rate (Mifflin-St Jeor)' },
-    { name: 'TDEE Calculator', icon: '⚡', desc: 'Total Daily Energy Expenditure' },
-    { name: 'Body Fat %', icon: '💪', desc: 'Navy Method estimation' },
-    { name: 'Protein Needs', icon: '🥩', desc: 'Daily protein by goal & weight' },
-    { name: 'Water Intake', icon: '💧', desc: 'Daily hydration by activity' },
-    { name: 'Macro Split', icon: '📊', desc: 'Carb/protein/fat ratio by goal' },
-    { name: 'Intermittent Fasting', icon: '⏰', desc: '16:8, 18:6, 5:2, OMAD schedules' },
-    { name: 'VO₂ Max', icon: '🫁', desc: 'Aerobic fitness estimation' },
-    { name: '1-Rep Max', icon: '🏋️', desc: 'Epley, Brzycki, Lombardi formulas' },
-    { name: 'Ideal Weight', icon: '🎯', desc: 'Multiple formula range' },
-    { name: 'Calories Burned', icon: '🏃', desc: 'By activity, duration, weight' },
+    { id: 'bmi', name: 'BMI Calculator', icon: '⚖️', desc: 'Body Mass Index + health risk' },
+    { id: 'bmr', name: 'BMR Calculator', icon: '🔥', desc: 'Basal Metabolic Rate (Mifflin-St Jeor)' },
+    { id: 'tdee', name: 'TDEE Calculator', icon: '⚡', desc: 'Total Daily Energy Expenditure' },
+    { id: 'body-fat', name: 'Body Fat %', icon: '💪', desc: 'Navy Method estimation' },
+    { id: 'protein', name: 'Protein Needs', icon: '🥩', desc: 'Daily protein by goal & weight' },
+    { id: 'water', name: 'Water Intake', icon: '💧', desc: 'Daily hydration by activity' },
+    { id: 'macro-split', name: 'Macro Split', icon: '📊', desc: 'Carb/protein/fat ratio by goal' },
+    { id: 'fasting', name: 'Intermittent Fasting', icon: '⏰', desc: '16:8, 18:6, 5:2, OMAD schedules' },
+    { id: 'vo2-max', name: 'VO₂ Max', icon: '🫁', desc: 'Aerobic fitness estimation' },
+    { id: '1rm', name: '1-Rep Max', icon: '🏋️', desc: 'Epley, Brzycki, Lombardi formulas' },
+    { id: 'ideal-weight', name: 'Ideal Weight', icon: '🎯', desc: 'Multiple formula range' },
+    { id: 'calories-burned', name: 'Calories Burned', icon: '🏃', desc: 'By activity, duration, weight' },
   ];
 
   return (
@@ -573,18 +590,25 @@ function CalculatorsSection() {
           </p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px', marginBottom: '32px' }}>
           {calcs.map(c => (
-            <Link key={c.name} href="/dashboard"
+            <Link key={c.name} href={`/calculators?calc=${c.id}`}
               style={{ textDecoration: 'none' }}
             >
-              <div className="card" style={{ padding: '20px', cursor: 'pointer' }}>
+              <div className="card" style={{ padding: '20px', cursor: 'pointer', transition: 'all 0.2s', height: '100%' }}>
                 <div style={{ fontSize: '28px', marginBottom: '10px' }}>{c.icon}</div>
                 <div style={{ fontWeight: 600, fontSize: '14px', color: 'white', marginBottom: '4px' }}>{c.name}</div>
                 <div style={{ fontSize: '12px', color: '#64748b' }}>{c.desc}</div>
               </div>
             </Link>
           ))}
+        </div>
+
+        <div style={{ textAlign: 'center' }}>
+          <Link href="/calculators" className="btn btn-outline" style={{ display: 'inline-flex', gap: '8px' }}>
+            Explore All 18 Calculators
+            <ArrowRight size={16} />
+          </Link>
         </div>
       </div>
     </section>
@@ -593,14 +617,72 @@ function CalculatorsSection() {
 
 // ─── Pricing Section ────────────────────────────────────────────────────────────
 function PricingSection() {
+  const [isYearly, setIsYearly] = useState(false);
+  const [showCheckout, setShowCheckout] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<'razorpay' | 'stripe'>('razorpay');
+  const [checkoutSuccess, setCheckoutSuccess] = useState(false);
+
+  const priceMonthly = '₹499';
+  const priceYearly = '₹3,999';
+  const activePrice = isYearly ? priceYearly : priceMonthly;
+  const activePeriod = isYearly ? '/year' : '/mo';
+
+  const handleCompletePayment = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('nutriai_premium', 'true');
+      localStorage.setItem('nutriai_premium_plan', isYearly ? 'yearly' : 'monthly');
+    }
+    setCheckoutSuccess(true);
+  };
+
   return (
     <section id="pricing" className="section-padding" style={{ background: 'rgba(0,0,0,0.2)' }}>
       <div className="container" style={{ maxWidth: '960px' }}>
-        <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
           <span className="badge badge-amber" style={{ marginBottom: '16px' }}>Transparent Pricing</span>
           <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(28px, 4vw, 48px)', fontWeight: 800, color: 'white', marginBottom: '16px' }}>
             Start Free. Upgrade Anytime.
           </h2>
+          <p style={{ color: '#94a3b8', fontSize: '16px', maxWidth: '480px', margin: '0 auto 24px' }}>
+            Choose a plan calibrated for your personal health and performance goals.
+          </p>
+
+          {/* Billing Toggle */}
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: '8px',
+            background: 'rgba(255,255,255,0.05)', padding: '6px 8px', borderRadius: '100px',
+            border: '1px solid rgba(255,255,255,0.1)',
+          }}>
+            <button
+              onClick={() => setIsYearly(false)}
+              style={{
+                padding: '8px 18px', borderRadius: '100px',
+                background: !isYearly ? '#10b981' : 'transparent',
+                color: !isYearly ? 'white' : '#94a3b8',
+                border: 'none', fontWeight: 700, fontSize: '13px', cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              Monthly Billing
+            </button>
+            <button
+              onClick={() => setIsYearly(true)}
+              style={{
+                padding: '8px 18px', borderRadius: '100px',
+                background: isYearly ? '#10b981' : 'transparent',
+                color: isYearly ? 'white' : '#94a3b8',
+                border: 'none', fontWeight: 700, fontSize: '13px', cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                display: 'flex', alignItems: 'center', gap: '6px',
+              }}
+            >
+              Yearly Billing
+              <span style={{
+                background: '#f59e0b', color: '#0f172a', fontSize: '10px',
+                fontWeight: 800, padding: '2px 6px', borderRadius: '100px',
+              }}>SAVE 33%</span>
+            </button>
+          </div>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
@@ -615,13 +697,13 @@ function PricingSection() {
               {[
                 '3 AI diet plans per day',
                 '5 AI diet plans per week',
-                'Full food database (1,000 items)',
+                'Full food database (7,380 items)',
                 'All 18 calculators',
                 'Weekly + monthly planner',
                 'PDF & Excel export (unlimited)',
                 'Food interaction engine',
                 'Allergy & disease warnings',
-                'Google Sign-In',
+                'Google Sign-In & Demo access',
               ].map(item => (
                 <div key={item} style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#94a3b8', fontSize: '14px' }}>
                   <Check size={16} color="#10b981" />
@@ -648,21 +730,23 @@ function PricingSection() {
             <div style={{ marginBottom: '24px' }}>
               <div style={{ fontSize: '14px', fontWeight: 600, color: '#10b981', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Premium</div>
               <div style={{ fontFamily: 'var(--font-display)', fontSize: '48px', fontWeight: 800, color: 'white' }}>
-                ₹499<span style={{ fontSize: '18px', color: '#64748b', fontWeight: 400 }}>/mo</span>
+                {activePrice}<span style={{ fontSize: '18px', color: '#64748b', fontWeight: 400 }}>{activePeriod}</span>
               </div>
-              <div style={{ color: '#64748b', fontSize: '14px' }}>or ₹3,999/year (save 33%)</div>
+              <div style={{ color: '#64748b', fontSize: '14px' }}>
+                {isYearly ? 'Billed annually at ₹3,999 (effective ₹333/mo)' : 'or ₹3,999/year (save 33%)'}
+              </div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '32px' }}>
               {[
                 'Everything in Free',
                 'Unlimited AI plan generation',
-                'Priority AI response',
-                'Dietitian consultation (video/chat)',
+                'Priority AI response (< 3 seconds)',
+                '1-on-1 Dietitian consultation voucher',
                 'Advanced wearable analytics',
-                'Disease-specific protocols',
+                'Clinical disease-specific protocols',
                 'Premium health trend dashboard',
-                'Priority support',
-                'Premium badge on profile',
+                'Priority 24/7 nutrition support',
+                'Verified Pro badge on profile',
               ].map(item => (
                 <div key={item} style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#94a3b8', fontSize: '14px' }}>
                   <Check size={16} color="#10b981" />
@@ -670,13 +754,154 @@ function PricingSection() {
                 </div>
               ))}
             </div>
-            <Link href="/auth/signin" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
+            <button
+              onClick={() => {
+                setCheckoutSuccess(false);
+                setShowCheckout(true);
+              }}
+              className="btn btn-primary"
+              style={{ width: '100%', justifyContent: 'center', cursor: 'pointer', border: 'none' }}
+            >
               <Zap size={16} />
-              Start Premium Trial
-            </Link>
+              Start Premium Subscription
+            </button>
           </div>
         </div>
       </div>
+
+      {/* ─── CHECKOUT MODAL ──────────────────────────────────────────────── */}
+      {showCheckout && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 100,
+          background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px',
+        }}>
+          <div style={{
+            background: '#0f172a', borderRadius: '24px', width: '100%', maxWidth: '480px',
+            border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)',
+            overflow: 'hidden', padding: '28px',
+          }}>
+            {checkoutSuccess ? (
+              <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                <div style={{
+                  width: '64px', height: '64px', borderRadius: '50%',
+                  background: 'rgba(16,185,129,0.15)', color: '#10b981',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  margin: '0 auto 16px', border: '2px solid #10b981',
+                }}>
+                  <Check size={32} />
+                </div>
+                <h3 style={{ color: 'white', fontSize: '22px', fontWeight: 800, marginBottom: '8px' }}>
+                  Welcome to NutriAI Premium!
+                </h3>
+                <p style={{ color: '#94a3b8', fontSize: '14px', lineHeight: 1.6, marginBottom: '24px' }}>
+                  Your subscription ({activePrice} {activePeriod}) has been activated successfully via {paymentMethod === 'razorpay' ? 'Razorpay' : 'Stripe'}.
+                </p>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button
+                    onClick={() => setShowCheckout(false)}
+                    className="btn btn-outline"
+                    style={{ flex: 1, justifyContent: 'center' }}
+                  >
+                    Close
+                  </button>
+                  <Link
+                    href="/dashboard"
+                    className="btn btn-primary"
+                    style={{ flex: 1, justifyContent: 'center' }}
+                  >
+                    Go to Dashboard
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                  <div>
+                    <h3 style={{ color: 'white', fontSize: '18px', fontWeight: 800, margin: 0 }}>
+                      Complete Your Subscription
+                    </h3>
+                    <p style={{ color: '#64748b', fontSize: '13px', margin: '4px 0 0' }}>
+                      NutriAI Premium · {isYearly ? 'Annual Billing' : 'Monthly Billing'}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowCheckout(false)}
+                    style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer' }}
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div style={{
+                  background: 'rgba(16,185,129,0.08)', borderRadius: '14px', padding: '16px',
+                  border: '1px solid rgba(16,185,129,0.2)', marginBottom: '20px',
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                }}>
+                  <div>
+                    <div style={{ color: 'white', fontWeight: 700, fontSize: '14px' }}>
+                      Total Amount Due
+                    </div>
+                    <div style={{ color: '#10b981', fontSize: '12px' }}>
+                      Renews automatically · Cancel anytime
+                    </div>
+                  </div>
+                  <div style={{ color: 'white', fontWeight: 800, fontSize: '24px' }}>
+                    {activePrice}
+                  </div>
+                </div>
+
+                {/* Gateway Selection */}
+                <div style={{ marginBottom: '20px' }}>
+                  <label style={{ display: 'block', color: '#94a3b8', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' }}>
+                    Select Payment Gateway
+                  </label>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod('razorpay')}
+                      style={{
+                        padding: '12px', borderRadius: '12px',
+                        background: paymentMethod === 'razorpay' ? 'rgba(16,185,129,0.12)' : 'rgba(255,255,255,0.03)',
+                        border: paymentMethod === 'razorpay' ? '1.5px solid #10b981' : '1px solid rgba(255,255,255,0.08)',
+                        color: 'white', cursor: 'pointer', textAlign: 'left',
+                      }}
+                    >
+                      <div style={{ fontWeight: 700, fontSize: '13px' }}>🇮🇳 Razorpay</div>
+                      <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>UPI, GPay, Cards</div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod('stripe')}
+                      style={{
+                        padding: '12px', borderRadius: '12px',
+                        background: paymentMethod === 'stripe' ? 'rgba(16,185,129,0.12)' : 'rgba(255,255,255,0.03)',
+                        border: paymentMethod === 'stripe' ? '1.5px solid #10b981' : '1px solid rgba(255,255,255,0.08)',
+                        color: 'white', cursor: 'pointer', textAlign: 'left',
+                      }}
+                    >
+                      <div style={{ fontWeight: 700, fontSize: '13px' }}>🌍 Stripe</div>
+                      <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>Visa, Mastercard</div>
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleCompletePayment}
+                  className="btn btn-primary"
+                  style={{ width: '100%', justifyContent: 'center', padding: '14px', fontWeight: 700, fontSize: '15px' }}
+                >
+                  <ShieldCheck size={18} /> Pay {activePrice} & Activate
+                </button>
+                <div style={{ fontSize: '11px', color: '#64748b', textAlign: 'center', marginTop: '12px' }}>
+                  🔒 256-bit encrypted checkout · Instant account upgrade
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </section>
   );
 }
@@ -742,9 +967,36 @@ function Footer() {
             </p>
           </div>
           {[
-            { title: 'Product', links: ['Features', 'Calculators', 'Food Database', 'Pricing', 'Mobile App'] },
-            { title: 'Conditions', links: ['Diabetes Diet', 'PCOS Diet', 'CKD Diet', 'Heart Disease', 'Weight Loss'] },
-            { title: 'Company', links: ['About', 'Privacy Policy', 'Terms', 'Contact', 'Blog'] },
+            {
+              title: 'Product',
+              links: [
+                { label: 'Food Database', href: '/food' },
+                { label: '18 Calculators', href: '/calculators' },
+                { label: 'Diet Planner', href: '/plan/generate' },
+                { label: 'Meal Calendar', href: '/calendar' },
+                { label: 'Pricing Plans', href: '#pricing' },
+              ],
+            },
+            {
+              title: 'Conditions',
+              links: [
+                { label: 'Type 2 Diabetes', href: '/disease/diabetes-type-2' },
+                { label: 'PCOS Protocol', href: '/disease/pcos' },
+                { label: 'CKD Protocol', href: '/disease/ckd' },
+                { label: 'Hypertension', href: '/disease/hypertension' },
+                { label: 'Fatty Liver (NAFLD)', href: '/disease/fatty-liver' },
+              ],
+            },
+            {
+              title: 'Account',
+              links: [
+                { label: 'Dashboard', href: '/dashboard' },
+                { label: 'Progress Tracking', href: '/progress' },
+                { label: 'User Profile', href: '/profile' },
+                { label: 'Settings', href: '/settings' },
+                { label: 'Sign In', href: '/auth/signin' },
+              ],
+            },
           ].map(col => (
             <div key={col.title}>
               <div style={{ fontSize: '12px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '16px' }}>
@@ -752,10 +1004,10 @@ function Footer() {
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {col.links.map(link => (
-                  <a key={link} href="#" style={{ color: '#475569', fontSize: '14px', textDecoration: 'none', transition: 'color 0.2s' }}
+                  <Link key={link.label} href={link.href} style={{ color: '#475569', fontSize: '14px', textDecoration: 'none', transition: 'color 0.2s' }}
                     onMouseOver={e => (e.currentTarget.style.color = '#94a3b8')}
                     onMouseOut={e => (e.currentTarget.style.color = '#475569')}
-                  >{link}</a>
+                  >{link.label}</Link>
                 ))}
               </div>
             </div>

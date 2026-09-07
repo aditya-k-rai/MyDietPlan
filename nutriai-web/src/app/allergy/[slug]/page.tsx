@@ -2,55 +2,22 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { FOODS } from '@/lib/data/foods';
+import { ALLERGENS, getAllergenById } from '@/lib/data/allergens';
 import {
   ChevronLeft, AlertTriangle, Shield, Check, Info, Zap, Flame, Leaf
 } from 'lucide-react';
-
-const ALLERGY_DATA: Record<string, {
-  name: string;
-  description: string;
-  symptoms: string[];
-  hiddenNames: string[];
-  crossReactivity: string[];
-  substitutes: string[];
-}> = {
-  peanuts: {
-    name: 'Peanut Allergy',
-    description: 'One of the most common and severe food allergies. Can cause severe anaphylactic reactions even with trace exposure.',
-    symptoms: ['Skin reactions (hives, swelling)', 'Digestive problems', 'Tightness of throat', 'Shortness of breath', 'Anaphylaxis'],
-    hiddenNames: ['Arachis oil', 'Ground nuts', 'Beer nuts', 'Hydrolyzed plant protein', 'Mixed nut butter'],
-    crossReactivity: ['Lupin', 'Tree nuts (cashews, almonds in up to 30% cases)', 'Soybeans (rare)'],
-    substitutes: ['Sunflower seed butter', 'Pumpkin seeds (pepitas)', 'Roasted chickpeas', 'Almond butter (if tree nut safe)'],
-  },
-  gluten: {
-    name: 'Gluten / Wheat Allergy & Celiac Disease',
-    description: 'Immune reaction to proteins found in wheat, barley, and rye. Causes intestinal damage in Celiac disease and systemic inflammation in gluten sensitivity.',
-    symptoms: ['Abdominal pain & bloating', 'Chronic diarrhea or constipation', 'Brain fog & fatigue', 'Skin rash (dermatitis herpetiformis)', 'Joint pain'],
-    hiddenNames: ['Atta', 'Maida', 'Seitan', 'Malt / Maltodextrin', 'Soy sauce (brewed with wheat)', 'Modified food starch'],
-    crossReactivity: ['Oats (due to cross-contamination in processing facilities)'],
-    substitutes: ['Quinoa', 'Brown Rice', 'Millets (Ragi, Jowar, Bajra)', 'Chickpea flour (Besan)', 'Buckwheat'],
-  },
-  milk: {
-    name: 'Milk / Dairy Allergy',
-    description: 'An immune reaction to milk proteins (casein and whey), distinct from lactose intolerance. Requires complete avoidance of milk-derived ingredients.',
-    symptoms: ['Hives & skin swelling', 'Wheezing & coughing', 'Vomiting & abdominal cramps', 'Nasal congestion'],
-    hiddenNames: ['Casein / Caseinate', 'Whey', 'Ghee / Butterfat', 'Paneer', 'Curd / Dahi', 'Lactalbumin'],
-    crossReactivity: ['Goat milk', 'Sheep milk'],
-    substitutes: ['Almond milk', 'Soy milk', 'Oat milk', 'Coconut milk', 'Tofu'],
-  },
-};
 
 interface Props {
   params: Promise<{ slug: string }>;
 }
 
 export async function generateStaticParams() {
-  return Object.keys(ALLERGY_DATA).map(slug => ({ slug }));
+  return ALLERGENS.map(a => ({ slug: a.id }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const allergy = ALLERGY_DATA[slug];
+  const allergy = getAllergenById(slug);
   if (!allergy) return { title: 'Allergy Guide | NutriAI' };
 
   return {
@@ -61,7 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function AllergyDetailPage({ params }: Props) {
   const { slug } = await params;
-  const allergy = ALLERGY_DATA[slug];
+  const allergy = getAllergenById(slug);
 
   if (!allergy) {
     // Render general fallback if slug not in static map

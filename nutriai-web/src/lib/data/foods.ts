@@ -81,19 +81,56 @@ export interface Food {
 export const FOODS: Food[] = foodsData as Food[];
 
 export function getFoodById(id: string): Food | undefined {
-  return FOODS.find(f => f.id === id);
+  if (!id) return undefined;
+  
+  // 1. Exact match
+  const exact = FOODS.find(f => f.id === id);
+  if (exact) return exact;
+
+  const normalized = id.toLowerCase().trim();
+
+  // 2. Base slug match: food ID starts with id- or exact base
+  const prefixMatch = FOODS.find(f => f.id.startsWith(normalized + '-') || f.id.startsWith(normalized));
+  if (prefixMatch) return prefixMatch;
+
+  // 3. Simplified slug match (e.g. oats-rolled -> oats, chickpeas -> chana-chickpeas)
+  const simplified = normalized.replace(/-(rolled|whole|raw|fresh|firm|cooked|organic)/g, '');
+  const simplifiedMatch = FOODS.find(f => f.id.includes(simplified) || f.id.startsWith(simplified));
+  if (simplifiedMatch) return simplifiedMatch;
+
+  // 4. Token & alias matching
+  const words = normalized.split('-').filter(w => w.length > 2);
+  const tokenMatch = FOODS.find(f => {
+    const fName = f.name.toLowerCase();
+    const fId = f.id.toLowerCase();
+    if (words.length > 0 && words.every(w => fName.includes(w) || fId.includes(w))) return true;
+    return f.aliases.some(a => words.every(w => a.toLowerCase().includes(w)));
+  });
+  if (tokenMatch) return tokenMatch;
+
+  // 5. General substring match in name or aliases
+  const phrase = normalized.replace(/-/g, ' ');
+  return FOODS.find(f => 
+    f.name.toLowerCase().includes(phrase) || 
+    f.aliases.some(a => a.toLowerCase().includes(phrase))
+  );
 }
 
 export function searchFoods(query: string, limit = 100): Food[] {
-  const q = query.toLowerCase();
+  const q = query.toLowerCase().trim();
+  if (!q) return FOODS.slice(0, limit);
+  const words = q.split(/\s+/);
   const matches: Food[] = [];
   for (let i = 0; i < FOODS.length; i++) {
     const f = FOODS[i];
-    if (
-      f.name.toLowerCase().includes(q) ||
-      f.category.toLowerCase().includes(q) ||
-      f.aliases.some(a => a.toLowerCase().includes(q))
-    ) {
+    const nameLower = f.name.toLowerCase();
+    const catLower = f.category.toLowerCase();
+    const match = words.every(w => 
+      nameLower.includes(w) || 
+      catLower.includes(w) || 
+      f.aliases.some(a => a.toLowerCase().includes(w))
+    );
+    if (match) {
       matches.push(f);
       if (matches.length >= limit) break;
     }
@@ -102,7 +139,9 @@ export function searchFoods(query: string, limit = 100): Food[] {
 }
 
 export function getFoodsByCategory(category: string, limit = 100): Food[] {
+  if (category === 'All') return FOODS.slice(0, limit);
   return FOODS.filter(f => f.category === category).slice(0, limit);
 }
 
 export const FOOD_CATEGORIES = Array.from(new Set(FOODS.map(f => f.category)));
+
